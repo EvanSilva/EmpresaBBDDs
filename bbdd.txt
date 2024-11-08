@@ -1,0 +1,59 @@
+create database if not exists empresa;
+USE empresa;
+
+-- Tabla EMPREGADO (sin claves foráneas)
+CREATE TABLE EMPREGADO (
+    Nome VARCHAR(25) NOT NULL,
+    Apelido_1 VARCHAR(25) NOT NULL,
+    Apelido_2 VARCHAR(25) NOT NULL,
+    NSS VARCHAR(15) NOT NULL PRIMARY KEY,
+    Rua VARCHAR(30) NULL,
+    Numero_rua INT NULL,
+    Piso VARCHAR(4),
+    CP CHAR(5) NULL,
+    Localidade VARCHAR(25) NULL,
+    Data_nacemento DATE NULL,
+    Salario FLOAT NULL,
+    Sexo CHAR(1) NULL,
+    NSS_Supervisa VARCHAR(15) NULL,
+    Num_departamento_pertenece INT NULL
+);
+
+-- Tabla DEPARTAMENTO (sin claves foráneas)
+CREATE TABLE DEPARTAMENTO (
+    Num_departamento INT NOT NULL PRIMARY KEY,
+    Nome_departamento VARCHAR(25) NOT NULL,
+    NSS_dirige VARCHAR(15),
+    Data_direccion DATE
+);
+
+-- Tabla PROXECTO (sin claves foráneas)
+CREATE TABLE PROXECTO (
+    Num_proxecto INT NOT NULL PRIMARY KEY,
+    Nome_proxecto VARCHAR(25) NOT NULL,
+    Lugar VARCHAR(25) NOT NULL,
+    Num_departamento INT NOT NULL
+);
+
+-- Tabla EMPREGADO_PROXECTO (sin claves foráneas)
+CREATE TABLE EMPREGADO_PROXECTO (
+    NSS_Empregado VARCHAR(15) NOT NULL,
+    Num_proxecto INT NOT NULL,
+    Horas_semanais INT,
+    PRIMARY KEY (NSS_Empregado, Num_proxecto)
+);
+
+-- Añadir claves foráneas al final
+ALTER TABLE EMPREGADO
+    ADD CONSTRAINT FK_NSS_Supervisa FOREIGN KEY (NSS_Supervisa) REFERENCES EMPREGADO(NSS),
+    ADD CONSTRAINT FK_Num_departamento_pertenece FOREIGN KEY (Num_departamento_pertenece) REFERENCES DEPARTAMENTO(Num_departamento);
+
+ALTER TABLE DEPARTAMENTO
+    ADD CONSTRAINT FK_NSS_dirige FOREIGN KEY (NSS_dirige) REFERENCES EMPREGADO(NSS);
+
+ALTER TABLE PROXECTO
+    ADD CONSTRAINT FK_Num_departamento FOREIGN KEY (Num_departamento) REFERENCES DEPARTAMENTO(Num_departamento);
+
+ALTER TABLE EMPREGADO_PROXECTO
+    ADD CONSTRAINT FK_NSS_Empregado FOREIGN KEY (NSS_Empregado) REFERENCES EMPREGADO(NSS),
+    ADD CONSTRAINT FK_Num_proxecto FOREIGN KEY (Num_proxecto) REFERENCES PROXECTO(Num_proxecto);
