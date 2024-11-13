@@ -14,10 +14,13 @@ public class Main {
 
         connectDB();
 
-        sumarSalarioDepartamento(200, "CONTABILIDADE");
+        // sumarSalarioDepartamento(200, "CONTABILIDADE");
 
-        añadirNuevoDepartamento(9, "RecursosHermanos", "0010010");
+        // añadirNuevoDepartamento(9, "RecursosHermanos", "0010010");
 
+        // eliminarEmpleadoDeProyecto(8,"0010010");
+
+        visualizarEmpleadosDeLocalidad("Vigo");
 
 
 
