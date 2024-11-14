@@ -1,5 +1,7 @@
 package org.example;
 
+import org.example.bbdditems.Proxecto;
+
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -20,7 +22,14 @@ public class Main {
 
         // eliminarEmpleadoDeProyecto(8,"0010010");
 
-        visualizarEmpleadosDeLocalidad("Vigo");
+        // visualizarEmpleadosDeLocalidad("Lugo");
+
+        // cambiarDepartamentoDeProyecto("PERSOAL","PORTAL");
+
+        //Proxecto proyectonuevo = new Proxecto(11,"BallAndPinpong","America",1);
+        //añadirProyecto(proyectonuevo);
+
+        eliminarProyecto(11);
 
 
 

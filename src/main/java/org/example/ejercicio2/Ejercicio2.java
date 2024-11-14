@@ -1,5 +1,7 @@
 package org.example.ejercicio2;
 
+import org.example.bbdditems.Proxecto;
+
 import java.sql.*;
 public class Ejercicio2 {
 
@@ -69,7 +71,26 @@ public class Ejercicio2 {
 
     public static void visualizarEmpleadosDeLocalidad(String localidade) throws SQLException {
 
-        String sqUpdate = "SELECT * FROM empregado WHERE Localidade = '" + localidade + "'";
+        String sqUpdate = """
+                SELECT\s
+                    e.Nome,
+                    e.Apelido_1,
+                    e.Apelido_2,
+                    e.Localidade,
+                    e.Salario,
+                    e.Data_nacemento,
+                    (SELECT nome\s
+                     FROM EMPREGADO\s
+                     WHERE NSS = e.NSS_Supervisa) AS Jefe,
+                    (SELECT Nome_departamento\s
+                		FROM DEPARTAMENTO
+                        WHERE Num_departamento = E.Num_departamento_pertenece) AS Departamento
+                FROM\s
+                    EMPREGADO e
+                WHERE\s
+                    e.Localidade = '"""+  localidade + "'; "
+
+        ;
 
         String NombreDepartamento = "SELECT * FROM empregado WHERE Localidade = '" + localidade + "'";
 
@@ -89,32 +110,19 @@ public class Ejercicio2 {
                 String localidad = respuesta.getString("Localidade");
                 Integer salario = respuesta.getInt("Salario");
                 String nacemento = respuesta.getString("Data_nacemento");
+                String nss = respuesta.getString("Jefe");
+                String departamento = respuesta.getString("Departamento");
 
-                String nombrJefe = "SELECT e2.Nome AS NombreJefe " +
-                        "FROM empregado e1 " +
-                        "JOIN empregado e2 ON e1.Nss_supervisa = e2.Nss " +
-                        "WHERE e1.Nss = '" + respuesta.getString("NSS") + "'";
-
-                String nombrDepartamento = "SELECT departamento.nombre_departamento AS nombrDepartamento " +
-                        "FROM empregado " +
-                        "INNER JOIN departamento ON empregado.departamento_id = departamento.departamento_id";
-
-
-
-                ResultSet respuestaJefe = statementFetch.executeQuery(nombrJefe);
-
-                ResultSet respuestaDepartamento = statementFetch.executeQuery(nombrDepartamento);
 
                 System.out.println("Los datos del empleado " + nome + " son: \n" +
-                        nome + "\n" +
-                        apel1 + "\n" +
-                        apel2 + "\n" +
-                        localidad + "\n" +
-                        salario + "\n" +
-                        nacemento + "\n" +
-                        salario + "\n" +
-                        respuestaJefe.getString("NombreJefe") + "\n" +
-                        respuestaDepartamento.getString("nombrDepartamento") + "\n"
+                        "Nombre: "+  nome + "\n" +
+                        "Apellido1: "+  apel1 + "\n" +
+                        "Apellido2: "+  apel2 + "\n" +
+                        "Localidad: "+ localidad  + "\n" +
+                        "Salario: "+ salario  + "\n" +
+                        "Nacimiento: "+  nacemento + "\n" +
+                        "Jefe: "+  nss + "\n" +
+                        "Departamento: "+  departamento + "\n"
                 );
 
             }
@@ -127,6 +135,89 @@ public class Ejercicio2 {
             throw e;
         }
     }
+
+    /*
+
+    Realiza un programa Java para establecer unha conexión co SXBD MySQL, acceda á base de datos BDEmpresa, implemente e chame os seguintes métodos. Utiliza sentencias pre-compiladas (preparadas) e controla os posibles erros. Separa a chamada aos métodos da implementación deles en clases diferentes.
+
+    a) Fai un método para cambiar o departamento que controla un proxecto. O método recibirá como parámetros o nome do departamento e o nome do proxecto.
+
+    b) Fai un método para inserir un novo proxecto. O método recibirá como parámetro un obxecto proxecto. Crea a clase proxecto, cos métodos setter e getter, e coa mesma estrutura que a táboa proxecto.
+
+    c) Fai un método para borrar un proxecto. O método recibirá como parámetros o número do proxecto. Tamén debes borrar a información da asignación dos empregados ao proxecto.
+
+
+     */
+
+    public static void cambiarDepartamentoDeProyecto(String nombreDepartamento, String nombreProyecto) throws SQLException {
+
+        String sqUpdate = """
+                UPDATE proxecto AS p
+                	SET p.Num_departamento = (
+                							SELECT d.Num_departamento
+                								FROM departamento AS d
+                								WHERE d.Nome_departamento = '""" + nombreDepartamento + """
+                	')
+                	WHERE p.Num_proxecto = (
+                		SELECT Num_proxecto
+                		FROM (SELECT Num_proxecto FROM proxecto WHERE Nome_proxecto = '""" + nombreProyecto +  """
+                ') AS temp
+                );
+
+                """;
+
+        try (Statement statementUpdate = conexion.createStatement()) {
+            int filasActualizadas = statementUpdate.executeUpdate(sqUpdate);
+            System.out.println("Filas actualizadas: " + filasActualizadas);
+        } catch (SQLException e) {
+            e.printStackTrace();
+            throw e;
+        }
+    }
+
+
+
+    public static void añadirProyecto (Proxecto proyecto) throws SQLException {
+
+        String sqUpdate = """ 
+                INSERT INTO proxecto(Num_proxecto,Nome_proxecto,Lugar,Num_departamento) 
+                VALUES("""+ proyecto.getNum_proxecto() + ",'"+ proyecto.getNome_proxecto()+"','"+ proyecto.getLugar()+"',"+proyecto.getNum_departamento()+");";
+
+
+        try (Statement statementUpdate = conexion.createStatement()) {
+            // Ejecutar actualización
+            int filasActualizadas = statementUpdate.executeUpdate(sqUpdate);
+            System.out.println("Filas actualizadas: " + filasActualizadas);
+        } catch (SQLException e) {
+            e.printStackTrace();
+            throw e;
+        }
+
+    }
+
+    public static void eliminarProyecto (int idProyecto) throws SQLException {
+
+        String sqUpdate = """
+                
+                DELETE FROM proxecto
+                        WHERE Num_proxecto = """ + idProyecto + """
+                ;
+                """;
+
+
+        try (Statement statementUpdate = conexion.createStatement()) {
+            // Ejecutar actualización
+            int filasActualizadas = statementUpdate.executeUpdate(sqUpdate);
+            System.out.println("Filas actualizadas: " + filasActualizadas);
+        } catch (SQLException e) {
+            e.printStackTrace();
+            throw e;
+        }
+
+    }
+
+
+
 
 }
 
