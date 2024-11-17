@@ -138,7 +138,7 @@ public class Ejercicio2 {
 
     /*
 
-    Realiza un programa Java para establecer unha conexión co SXBD MySQL, acceda á base de datos BDEmpresa, implemente e chame os seguintes métodos. Utiliza sentencias pre-compiladas (preparadas) e controla os posibles erros. Separa a chamada aos métodos da implementación deles en clases diferentes.
+    2.3 Realiza un programa Java para establecer unha conexión co SXBD MySQL, acceda á base de datos BDEmpresa, implemente e chame os seguintes métodos. Utiliza sentencias pre-compiladas (preparadas) e controla os posibles erros. Separa a chamada aos métodos da implementación deles en clases diferentes.
 
     a) Fai un método para cambiar o departamento que controla un proxecto. O método recibirá como parámetros o nome do departamento e o nome do proxecto.
 
@@ -216,8 +216,162 @@ public class Ejercicio2 {
 
     }
 
+    /*
+
+        Exercicio 2.5. Execución de procedementos almacenados e funcións.
+
+        Realiza un programa Java para establecer unha conexión co SXBD MySql, acceda á base de datos BDEmpresa, implemente e chame os seguintes métodos. Controla os posibles erros e separa a chamada aos métodos da implementación deles en clases diferentes.
+
+        a)
+
+        – Primeiro, na base de datos BDEmpresa, crea un procedemento almacenado chamado pr_cambioDomicilio para que modifique a dirección dun empregado cos datos que se lle pasan por parámetro. O procedemento recibirá como parámetros o nss do empre-gado, e os novos datos: rúa, número, piso, código postal e localidade.
+
+        – Crea un método que chame ao procedemento sp_cambioDomicilio. O método recibirá como parámetros o nss do empregado, a rúa, o número, o piso, o código postal e a localidade.
+
+        b)
+
+        – Crea un procedemento almacenado chamado pr_DatosProxectos que reciba un número de proxecto e devolva o nome, lugar e número de departamento de dito proxecto. O procedemento terá un parámetro de entrada e tres de saída.
+
+        – Crea un método que chame ao procedemento pr_DatosProxectos. O método recibirá como parámetros o número de proxecto e devolverá un obxecto proxecto. c)
+
+        – Crea un procedemento almacenado chamado pr_DepartControlaProxec que mostre os datos dos departamentos que controlan un número de proxectos igual ou maior que un valor enteiro pasado por parámetro.
+
+        – Crea un método que chame ao procedemento pr_DepartControlaProxec. O método recibirá como parámetros un número enteiro, e visualizará os datos dos departamentos que controlan un número de proxectos igual ou maior que o valor pasado por parámetro. Utiliza a instrución execute para a chamada ao procedemento. Visualiza tamén si se tratou dunha sentenza de actualización ou de selección.
+
+        d)
+
+        – Crea unha función chamada fn_nEmpDepart que dado o nome do departamento, devolva o número de empregados de dito departamento.
+
+        – Crea un método que dado o nome do departamento, execute a anterior función visualizando o resultado.
+
+        [NO SÉ HACERLO]
+
+
+     */
+
+    public static void cambioDomicilio(String nss, String rua, int numero, String piso, int cp, String localidade ) {
+
+        String procedimiento = "{ CALL pr_cambioDomicilio(?, ?, ?, ?, ?, ?) }";
+
+        try (CallableStatement callableStatement = conexion.prepareCall(procedimiento)) {
+
+            callableStatement.setString(1, nss);
+            callableStatement.setString(2, rua);
+            callableStatement.setInt(3, numero);
+            callableStatement.setString(4, piso);
+            callableStatement.setInt(5, cp);
+            callableStatement.setString(6, localidade);
+            callableStatement.execute();
+
+            System.out.println("Dirección del empleado actualizada correctamente.");
+        } catch (SQLIntegrityConstraintViolationException e) {
+            System.out.println("Error: Integridad de datos violada. Verifica los datos ingresados.");
+        } catch (SQLException e) {
+            System.out.println("Error al ejecutar el procedimiento: " + e.getMessage());
+        }
+    }
+
+    public static void getDatosProyectos(int numProyecto) {
+        String statement = "{ CALL pr_DatosProxectos(?, ?, ?, ?) }";
+
+        try (CallableStatement callableStatement = conexion.prepareCall(statement)) {
+            // Configurar el parámetro de entrada
+            callableStatement.setInt(1, numProyecto);
+
+            // Configurar los parámetros de salida
+            callableStatement.registerOutParameter(2, Types.VARCHAR);
+            callableStatement.registerOutParameter(3, Types.VARCHAR);
+            callableStatement.registerOutParameter(4, Types.INTEGER);
+
+            // Ejecutar el procedimiento
+            callableStatement.execute();
+
+            // Obtener los resultados de los parámetros de salida
+            String nome = callableStatement.getString(2);
+            String lugar = callableStatement.getString(3);
+            int numDepartamento = callableStatement.getInt(4);
+
+            // Imprimir los resultados
+            System.out.println("Nome do proxecto: " + nome);
+            System.out.println("Lugar do proxecto: " + lugar);
+            System.out.println("Número de departamento: " + numDepartamento);
+
+        } catch (SQLException e) {
+            e.printStackTrace(); // Mostrar información del error
+            System.err.println("Erro ao executar o procedemento: " + e.getMessage());
+        }
+    }
+
+    public static void getDepartamentosConMasDeXPryectos(int numProyectos) {
+        String statement = "{ CALL pr_DepartControlaProxec(?) }";
+
+        try (CallableStatement callableStatement = conexion.prepareCall(statement)) {
+            // Configurar el parámetro de entrada
+            callableStatement.setInt(1, numProyectos);
+
+            // Ejecutar el procedimiento
+            boolean hasResults = callableStatement.execute();
+
+            // Si el procedimiento devuelve un ResultSet
+            if (hasResults) {
+                ResultSet resultSet = callableStatement.getResultSet();
+
+                // Recorrer el ResultSet y mostrar todos los registros
+                while (resultSet.next()) {
+                    int numDepartamento = resultSet.getInt("Num_departamento");
+                    String nomeDepartamento = resultSet.getString("Nome_departamento");
+                    int numProxectos = resultSet.getInt("NumProxectos");
+
+                    // Imprimir los resultados
+                    System.out.println("Numero do Departamento: " + numDepartamento);
+                    System.out.println("Nome Departamento: " + nomeDepartamento);
+                    System.out.println("Número de Proxectos: " + numProxectos);
+                    System.out.println("----------------------------");
+                }
+            } else {
+                System.out.println("Non hai departamentos que controlen tantos proxectos.");
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace(); // Mostrar información del error
+            System.err.println("Erro ao executar o procedemento: " + e.getMessage());
+        }
+    }
+
+    /*
+
+    Exercicio 2.6. Xestión do resultado dunha consulta.
+
+    Realiza un programa Java para establecer unha conexión co SXBD MySql, que acceda á base de datos BDEmpresa, implemente e chame os seguintes métodos. Controla os posibles erros e separa a chamada aos métodos da implementación deles en clases diferentes.
+
+    a) Crea un método para visualizar os tipos de ResultSet e a concorrencia soportada polo conectador JDBC de MySQL.
+
+     */
+
+    public static void getRsTypesConc(){
+        try{
+            DatabaseMetaData dbmd = conexion.getMetaData();
+            if (dbmd.supportsResultSetConcurrency(ResultSet.TYPE_SCROLL_SENSITIVE, ResultSet.CONCUR_UPDATABLE))
+                System.out.println("Soporta TYPE_SCROLL_SENSITIVE y CONCUR_UPDATABLE");
+            if (dbmd.supportsResultSetConcurrency(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE))
+                System.out.println("Soporta TYPE_SCROLL_INSENSITIVE y CONCUR_UPDATABLE");
+            if (dbmd.supportsResultSetConcurrency(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_UPDATABLE))
+                System.out.println("Soporta TYPE_FORWARD_ONLY y CONCUR_UPDATABLE");
+            if (dbmd.supportsResultSetConcurrency(ResultSet.TYPE_SCROLL_SENSITIVE, ResultSet.CONCUR_READ_ONLY))
+                System.out.println("Soporta TYPE_SCROLL_SENSITIVE y CONCUR_READ_ONLY");
+            if (dbmd.supportsResultSetConcurrency(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY))
+                System.out.println("Soporta TYPE_SCROLL_INSENSITIVE y CONCUR_READ_ONLY");
+            if (dbmd.supportsResultSetConcurrency(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY))
+                System.out.println("Soporta TYPE_FORWARD_ONLY y CONCUR_READ_ONLY");
+
+        }catch (SQLException e){
+            System.out.println("Error al contar los empleados de departamento.");
+            e.printStackTrace();
+        }
+    }
 
 
 
 }
+
 

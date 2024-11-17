@@ -26,10 +26,18 @@ public class Main {
 
         // cambiarDepartamentoDeProyecto("PERSOAL","PORTAL");
 
-        //Proxecto proyectonuevo = new Proxecto(11,"BallAndPinpong","America",1);
-        //añadirProyecto(proyectonuevo);
+        // Proxecto proyectonuevo = new Proxecto(11,"BallAndPinpong","America",1);
+        // añadirProyecto(proyectonuevo);
 
-        eliminarProyecto(11);
+        // eliminarProyecto(11);
+
+        // cambioDomicilio("1010001", "Awaewa",69,"77", 23241, "awaweria");
+
+        // getDatosProyectos(10);
+
+        // getDepartamentosConMasDeXPryectos(2);
+        
+        getRsTypesConc();
 
 
 
