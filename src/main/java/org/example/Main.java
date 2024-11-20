@@ -26,10 +26,10 @@ public class Main {
 
         // cambiarDepartamentoDeProyecto("PERSOAL","PORTAL");
 
-        // Proxecto proyectonuevo = new Proxecto(11,"BallAndPinpong","America",1);
+         //  Proxecto proyectonuevo = new Proxecto(11,"BallAndPinpong","America",1);
         // añadirProyecto(proyectonuevo);
 
-        // eliminarProyecto(11);
+           // eliminarProyecto(11);
 
         // cambioDomicilio("1010001", "Awaewa",69,"77", 23241, "awaweria");
 
@@ -37,10 +37,16 @@ public class Main {
 
         // getDepartamentosConMasDeXPryectos(2);
         
-        getRsTypesConc();
+        // getRsTypesConc();
 
+        //insertProyecto(proyectonuevo);
 
+        // System.out.println(existeProyecto("BallAndPinpong", 11));
+        // System.out.println(existeDepartamento( 7));
 
+        //subirSueldoEmpleadosDepartamento(1, 10000);
+
+        obtenerDatosDeEmpleadosConXproyectos(1);
 
 
     }
