@@ -218,6 +218,49 @@ public class Ejercicio2 {
 
     /*
 
+    Exercicio 2.4. Consulta de datos utilizando a interface PreparedStatement.
+
+    No programa anterior, engade un método que reciba como parámetro o nome dun departamento e devolva una lista de obxectos proxectos coa información dos proxectos que controla dito departamento. Utiliza sentenzas parametrizadas e controla os posible erros.
+
+     */
+
+    public static void getProyectosDeDepartamento(String nombreDepartamento) throws SQLException {
+        String sqUpdate = """
+            SELECT *
+            FROM proxecto
+            WHERE Num_departamento = (
+                SELECT Num_departamento
+                FROM departamento
+                WHERE Nome_departamento = ?
+            )
+            """;
+
+        System.out.println("[ PROXECTOS DEL DEPARTAMENTO " + nombreDepartamento + " ] ");
+
+        try (PreparedStatement pstmt = conexion.prepareStatement(sqUpdate)) {
+
+            pstmt.setString(1, nombreDepartamento);
+
+            ResultSet resultado = pstmt.executeQuery();
+
+            while (resultado.next()) {
+                int id = resultado.getInt("Num_proxecto");
+                String nome_proxecto = resultado.getString("Nome_proxecto");
+                String lugar = resultado.getString("Lugar");
+                Integer num_departamento = resultado.getInt("Num_departamento");
+
+                Proxecto proxectoAMostrar = new Proxecto(id, nome_proxecto, lugar, num_departamento);
+                System.out.println(proxectoAMostrar.toString());
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            throw e;
+        }
+    }
+
+
+    /*
+
         Exercicio 2.5. Execución de procedementos almacenados e funcións.
 
         Realiza un programa Java para establecer unha conexión co SXBD MySql, acceda á base de datos BDEmpresa, implemente e chame os seguintes métodos. Controla os posibles erros e separa a chamada aos métodos da implementación deles en clases diferentes.
@@ -369,6 +412,230 @@ public class Ejercicio2 {
             e.printStackTrace();
         }
     }
+
+     /*
+
+     b) Crea un método que reciba como parámetro un obxecto proxecto e insira os seus datos na táboa proxecto. O obxecto proxecto conten os datos dun proxecto novo. A inserción do novo proxecto realizarase a través dun ResultSet dinámico, xerado mediante unha consulta a todos os datos da táboa proxectos. Para controlar os erros, tedes que implementar os seguintes métodos:
+
+     – Visualiza a información da primeira fila do ResultSet.
+
+     – Visualiza a información da última fila do ResultSet.
+
+     – Visualiza a información da antepenúltima fila do ResultSet.
+
+     – Visualiza toda a información do ResultSet en sentido contrario, é dicir, desde a última fila ata a primeira.
+     */
+
+
+    public static void insertProyecto(Proxecto proyecto) throws SQLException {
+
+        Statement statement = conexion.createStatement(
+                ResultSet.TYPE_SCROLL_SENSITIVE,
+                ResultSet.CONCUR_UPDATABLE);
+
+        try (ResultSet resultSet = statement.executeQuery("SELECT * FROM PROXECTO")) {
+
+            resultSet.moveToInsertRow();
+            resultSet.updateInt("Num_proxecto", proyecto.getNum_proxecto());
+            resultSet.updateString("Nome_proxecto", proyecto.getNome_proxecto());
+            resultSet.updateString("Lugar", proyecto.getLugar());
+            resultSet.updateInt("Num_departamento", proyecto.getNum_departamento());
+
+            resultSet.insertRow();
+            resultSet.moveToCurrentRow();
+
+            /*
+
+
+            resultSet.first();
+            System.out.println(
+                    "Primer proyecto: " +
+                            "Num_proxecto: " + resultSet.getInt("Num_proxecto") + ", " +
+                            "Nome_proxecto: " + resultSet.getString("Nome_proxecto") + ", " +
+                            "Lugar: " + resultSet.getString("Lugar") + ", " +
+                            "Num_departamento: " + resultSet.getInt("Num_departamento")
+            );
+
+            resultSet.last();
+            System.out.println(
+                    "Ultimo proyecto: " +
+                    "Num_proxecto: " + resultSet.getInt("Num_proxecto") + ", " +
+                            "Nome_proxecto: " + resultSet.getString("Nome_proxecto") + ", " +
+                            "Lugar: " + resultSet.getString("Lugar") + ", " +
+                            "Num_departamento: " + resultSet.getInt("Num_departamento")
+            );
+
+            resultSet.absolute(-2);
+            System.out.println(
+                    "Antepenultimo proyecto: " +
+                            "Num_proxecto: " + resultSet.getInt("Num_proxecto") + ", " +
+                            "Nome_proxecto: " + resultSet.getString("Nome_proxecto") + ", " +
+                            "Lugar: " + resultSet.getString("Lugar") + ", " +
+                            "Num_departamento: " + resultSet.getInt("Num_departamento")
+            );
+
+            resultSet.last();
+            System.out.println("Desde el ultimo hasta el primero");
+
+            System.out.println(
+
+                    " proyecto: " +
+                            "Num_proxecto: " + resultSet.getInt("Num_proxecto") + ", " +
+                            "Nome_proxecto: " + resultSet.getString("Nome_proxecto") + ", " +
+                            "Lugar: " + resultSet.getString("Lugar") + ", " +
+                            "Num_departamento: " + resultSet.getInt("Num_departamento")
+            );
+
+            while(resultSet.previous()) {
+
+                System.out.println(
+
+                        " proyecto: " +
+                                "Num_proxecto: " + resultSet.getInt("Num_proxecto") + ", " +
+                                "Nome_proxecto: " + resultSet.getString("Nome_proxecto") + ", " +
+                                "Lugar: " + resultSet.getString("Lugar") + ", " +
+                                "Num_departamento: " + resultSet.getInt("Num_departamento")
+                );
+
+            }
+
+            */
+
+        } catch (SQLException e) {
+            System.out.printf(e.getMessage());
+        }
+
+    }
+
+    public static boolean existeProyecto(String nombreProyectoNuevo, int numeroProyectoNuevo) throws SQLException {
+
+        Statement statement = conexion.createStatement(
+                ResultSet.TYPE_SCROLL_SENSITIVE,
+                ResultSet.CONCUR_UPDATABLE);
+
+        try (ResultSet resultSet = statement.executeQuery("SELECT * FROM PROXECTO")) {
+
+            resultSet.first();
+            while (resultSet.next()) {
+
+                int numProxectoActual = resultSet.getInt("Num_proxecto");
+                String nomeProxectoActual = resultSet.getString("Nome_proxecto");
+
+                if (numProxectoActual == numeroProyectoNuevo && nomeProxectoActual.equals(nombreProyectoNuevo)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+
+    }
+
+    /*
+
+     Método que devolva true si o número de departamento existe na táboa departamento e false no caso contrario
+
+     */
+
+    public static boolean existeDepartamento(int numDepartamento) throws SQLException {
+
+        Statement statement = conexion.createStatement(
+                ResultSet.TYPE_SCROLL_SENSITIVE,
+                ResultSet.CONCUR_UPDATABLE);
+
+        try (ResultSet resultSet = statement.executeQuery("""
+                select *
+                	from departamento
+                   
+                """)) {
+
+            while (resultSet.next()){
+
+                int numProxectoActual = resultSet.getInt("Num_departamento");
+
+                if (numProxectoActual == numDepartamento ) {
+                    return true;
+                }
+            }
+
+        }
+        return false;
+
+    }
+
+    /*
+    c) Crea un método que se lle pase por parámetro unha cantidade e un número de departamento e incremente o salario de todos os empregados dese departamento nesa cantidade. Utiliza a actualización dinámica por medio de ResultSet.
+   */
+
+
+    public static void subirSueldoEmpleadosDepartamento(int numDepartamento, int subidaSueldo) throws SQLException {
+
+        Statement statement = conexion.createStatement(
+                ResultSet.TYPE_SCROLL_SENSITIVE,
+                ResultSet.CONCUR_UPDATABLE);
+
+        try (ResultSet resultSet = statement.executeQuery("""
+                select *
+                	from empregado
+                    where Num_departamento_pertenece =""" + numDepartamento
+        )) {
+
+            if (resultSet.next()) {
+                do {
+                    int sueldoActual = resultSet.getInt("Salario");
+                    resultSet.updateFloat("Salario", sueldoActual + subidaSueldo);
+                    resultSet.updateRow();
+                } while (resultSet.next());
+            } else {
+                System.out.println("No se encontraron empleados en el departamento especificado.");
+            }
+        }
+    }
+
+    /*
+
+    d) Crea método que execute unha sentenza parametrizada para obter nss, nome completo (nome e apelidos), localidade e salario dos empregados que teñan asignado un número de proxectos maior que o que se introduce por parámetro. O ResultSet obtido debe ser de só lectura e con scroll para permitir movernos polo ResultSet en todas as direccións e a partir del, realiza o seguinte:
+
+     */
+
+
+    public static void obtenerDatosDeEmpleadosConXproyectos(int numProyectosMinimos) throws SQLException {
+
+        String query = """
+                SELECT NSS, NOME, APELIDO_1, APELIDO_2,LOCALIDADE,SALARIO
+                    FROM EMPREGADO
+                      WHERE NSS IN (
+                                    SELECT NSS_Empregado
+                                        FROM empregado_proxecto
+                                        group by NSS_Empregado
+                                        HAVING count(*) >= ? 
+                                        )
+                                       
+                """;
+
+        PreparedStatement preparedStatement = conexion.prepareStatement(
+                query,
+                ResultSet.TYPE_SCROLL_INSENSITIVE,
+                ResultSet.CONCUR_READ_ONLY);
+
+        preparedStatement.setInt(1,numProyectosMinimos);
+        ResultSet rs = preparedStatement.executeQuery();
+        while (rs.next()){
+
+            mostrarDatosEmpleado(rs);
+        }
+    }
+
+
+    private static void mostrarDatosEmpleado(ResultSet rs) throws SQLException {
+        String nss = rs.getString("NSS");
+        String nome = rs.getString("NOME");
+        String ape1 = rs.getString("APELIDO_1");
+        String ape2 = rs.getString("APELIDO_2");
+        String localidade = rs.getString("LOCALIDADE");
+        double salario = rs.getDouble("SALARIO");
+        System.out.println("Nombre: " +nome+" " + ape1 + " " + ape2 + " | Nss: " +nss+ " | Localidade: "+localidade+ " | Salario: "+salario);
+    }
+
 
 
 
